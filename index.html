@@ -1,198 +1,57 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Calculadora Bitwise</title>
-<style>
-  :root {
-    var(--bg-color): #0f0f0f;
-    --card-bg: #1c1c1e;
-    --text-primary: #f2f2f2;
-    --text-secondary: #8e8e93;
-    --accent-color: #3b82f6;
-    --border-radius-lg: 24px;
-    --border-radius-sm: 12px;
-  }
-
-  body {
-    background-color: #0f0f0f;
-    color: var(--text-primary);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    margin: 0;
-  }
-
-  .container {
-    background-color: var(--card-bg);
-    width: 100%;
-    max-width: 400px;
-    padding: 24px;
-    border-radius: var(--border-radius-lg);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
-  }
-
-  h2 { margin-top: 0; margin-bottom: 24px; font-size: 22px; font-weight: 600; }
-
-  .class-selector {
-    display: flex;
-    background-color: #000;
-    border-radius: var(--border-radius-sm);
-    padding: 4px;
-    margin-bottom: 20px;
-  }
-
-  .class-btn {
-    flex: 1; background: transparent; border: none; color: var(--text-secondary);
-    padding: 10px; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.2s ease;
-  }
-
-  .class-btn.active {
-    background-color: var(--card-bg); color: var(--text-primary); box-shadow: 0 2px 8px rgba(0,0,0,0.4);
-  }
-
-  .input-group { display: flex; flex-direction: column; margin-bottom: 20px; }
-  label { font-size: 13px; color: var(--text-secondary); margin-bottom: 8px; padding-left: 4px; }
-  
-  input {
-    background-color: #000; border: 1px solid #333; color: var(--text-primary);
-    padding: 16px; border-radius: var(--border-radius-sm); font-size: 16px; outline: none; transition: border-color 0.2s;
-  }
-  input:focus { border-color: var(--accent-color); }
-
-  .calc-btn {
-    width: 100%; background-color: var(--accent-color); color: #fff; border: none;
-    padding: 16px; border-radius: var(--border-radius-lg); font-size: 16px; font-weight: 600; cursor: pointer; transition: opacity 0.2s;
-  }
-  .calc-btn:hover { opacity: 0.9; }
-
-  .results { margin-top: 24px; padding-top: 20px; border-top: 1px solid #333; display: none; }
-  .result-item { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 14px; }
-  .result-label { color: var(--text-secondary); }
-
-  .w11-spinner {
-    width: 16px;
-    height: 16px;
-    /* Fundo do anel semi-transparente */
-    border: 3px solid rgba(59, 130, 246, 0.2); 
-    /* Parte preenchida com a cor de destaque (azul) */
-    border-top-color: var(--accent-color); 
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-    display: inline-block;
-    vertical-align: middle;
-    margin-right: 6px;
-  }
-
-  @keyframes spin {
-    to { transform: rotate(360deg); }
-  }
-</style>
-</head>
-<body>
-<!-- dps na hora da refatoracao usar taiwind-->
-<div class="container">
-  <h2>Rede</h2>
-  
-  <div class="class-selector">
-    <button class="class-btn" data-class="A">Classe A</button>
-    <button class="class-btn" data-class="B">Classe B</button>
-    <button class="class-btn active" data-class="C">Classe C</button>
-  </div>
-
-  <div class="input-group">
-    <label for="ipInput">Endereço (IP/CIDR ou IP Máscara)</label>
-    <input type="text" id="ipInput" placeholder="Ex: 192.168.10.85/26 ou 255.255.255.192">
-    <span id="errorMsg" style="color: #ff453a; font-size: 13px; margin-top: 8px; display: none;"></span>
-  </div>
-
-  <button class="calc-btn" id="btnCalcular">Calcular</button>
-
-  <div class="results" id="resultsArea">
-    <div class="result-item"><span class="result-label">IP:</span> <span id="resIp">-</span></div>
-    <div class="result-item"><span class="result-label">Máscara:</span> <span id="resMask">-</span></div>
-    <div class="result-item"><span class="result-label">Rede:</span> <span id="resNet">-</span></div>
-    <div class="result-item"><span class="result-label">Broadcast:</span> <span id="resBroad">-</span></div>
-  </div>
-
- 
-</div>
- <script>
-    class IPv4Calculator {
-      static isValidIPv4(ip) {
-        if (!ip || typeof ip !== 'string') return false;
-
-        const octetos = ip.split('.');
-
-        if (octetos.length !== 4) return false;
-
-         
-        return octetos.every(octeto => { // 1.1
-          if (!/^\d+$/.test(octeto)) return false; // 1.2
-          const num = parseInt(octeto, 10); // 1.3 
-          
-          return num >= 0 && num <= 255 && String(num) === octeto;
-        })
-      }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calculadora Bitwise</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .w11-spinner {
+      width: 16px; height: 16px;
+      border: 3px solid rgba(59, 130, 246, 0.2);
+      border-top-color: #3b82f6;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
     }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body class="bg-[#0f0f0f] text-[#f2f2f2] font-sans flex justify-center items-center h-screen m-0">
 
-    const processarIp = new IPv4Calculator();
+  <div class="bg-[#1c1c1e] w-full max-w-[400px] p-6 rounded-[24px] shadow-2xl">
+    <h2 class="mt-0 mb-6 text-[22px] font-bold">Rede</h2>
+    
+    <!-- Seletor de Classes -->
+    <div id="classSelector" class="flex bg-black rounded-xl p-1 mb-5">
+      <!-- As cores de 'ativo' e 'inativo' serão controladas pelo JS -->
+      <button class="class-btn active flex-1 bg-[#1c1c1e] text-[#f2f2f2] p-2.5 rounded-lg cursor-pointer font-semibold transition-colors" data-class="A">Classe A</button>
+      <button class="class-btn flex-1 bg-transparent text-[#8e8e93] p-2.5 rounded-lg cursor-pointer font-semibold transition-colors" data-class="B">Classe B</button>
+      <button class="class-btn flex-1 bg-transparent text-[#8e8e93] p-2.5 rounded-lg cursor-pointer font-semibold transition-colors" data-class="C">Classe C</button>
+    </div>
 
-    // Animação de clique nas classes A, B e C
-    const classBtns = document.querySelectorAll('.class-btn');
-    classBtns.forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        classBtns.forEach(b => b.classList.remove('active'));
-        e.target.classList.add('active');
-      });
-    });
+    <!-- Inputs -->
+    <div class="flex flex-col mb-5">
+      <label for="ipInput" class="text-[13px] text-[#8e8e93] mb-2">Endereço (IP/CIDR ou IP Máscara)</label>
+      <input type="text" id="ipInput" class="bg-black border border-[#333] text-[#f2f2f2] p-4 rounded-xl text-base outline-none focus:border-[#3b82f6] transition-colors" placeholder="Ex: 192.168.10.85/26 ou 255.2.0.3">
+      
+      <div id="resultsPopup" class="bg-[#1c1c1e] border border-[#3b82f6] p-4 rounded-xl mt-3 hidden shadow-lg">
+        <span class="text-[#f2f2f2] text-sm">Aqui entrarão os resultados depois...</span>
+      </div>
 
-   
-    document.getElementById('btnCalcular').addEventListener('click', () => {
-      const inputElement = document.getElementById('ipInput');
-      const statusElement = document.getElementById('errorMsg');
-      const inputValue = document.getElementById('ipInput').value.trim();
+      <div id="statusMsg" class="hidden p-3 rounded-xl mt-3 text-[13px] font-semibold text-center border"></div>
+    </div>
 
-      statusElement.style.color = 'var(--text-secondary)'; // Cor cinza padrão
-      statusElement.innerHTML = '<div class="w11-spinner"></div> Calculando...';
-      statusElement.style.display = 'block';
+    <button id="btnCalcular" class="w-full bg-[#3b82f6] text-white border-none p-4 rounded-[24px] text-base font-semibold cursor-pointer hover:bg-blue-600 transition-colors">Calcular</button>
 
-      try {
-        const ipPart = inputValue.split(/[\s/]+/)[0];
+    <!-- Resultados -->
+    <div id="resultsArea" class="mt-6 pt-5 border-t border-[#333] hidden">
+      <div class="flex justify-between mb-3 text-sm"><span class="text-[#8e8e93]">IP:</span> <span id="resIp">-</span></div>
+      <div class="flex justify-between mb-3 text-sm"><span class="text-[#8e8e93]">Máscara:</span> <span id="resMask">-</span></div>
+      <div class="flex justify-between mb-3 text-sm"><span class="text-[#8e8e93]">Rede:</span> <span id="resNet">-</span></div>
+      <div class="flex justify-between mb-3 text-sm"><span class="text-[#8e8e93]">Broadcast:</span> <span id="resBroad">-</span></div>
+    </div>
+  </div>
 
-        if (!IPv4Calculator.isValidIPv4(ipPart)) {
-          throw new Error("IP inválido! Digite um formato correto (ex: 192.168.0.1).");
-        }
-        // fechar só quando terminar a operaçao
-        //setTimeout(() => statusElement.style.display = 'none', 1000)
-
-        // Mostra os resultados na tela
-        // document.getElementById('resIp').innerText = resultado.ip;
-        // document.getElementById('resMask').innerText = resultado.mascara;
-        // document.getElementById('resNet').innerText = resultado.rede;
-        // document.getElementById('resBroad').innerText = resultado.broadcast;
-        // document.getElementById('resultsArea').style.display = 'block';
-
-      } catch (erro) {
-        statusElement.style.color = '#ff453a';
-        statusElement.innerText = erro.message;
-
-        statusElement.style.display = 'block';
-        inputElement.value = ''; 
-        inputElement.focus();
-      }
-    });
-  </script>
+  <script src="app.js"></script>
 </body>
 </html>
-
-<!--
-  1.1 - O every só retorna true se todos os itens passarem pelo teste.
-  1.2 - Garante que contenha apenas dígitos numéricos.
-  1.3 - o parseInt remove os zeros a esquerda <-, apos isso eu comparo o valor convertido
-        convertendo denovo mais como por exemplo a entrada foi 025 apos a conversao fica 25,
-        convertendo 25 da "25" e nao "025".
--->
