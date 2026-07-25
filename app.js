@@ -7,9 +7,10 @@ class UIManager {
     ]);
 
     this.classBtns = document.querySelectorAll('.class-btn');
-    this.ipv4Validator = new IPv4Validator(); 
-    this.ipv4Calc = new IPv4Calculator(); 
 
+    this.ipv4Calc = new IPv4Calculator(); 
+    this.ipv4Validator = new IPv4Validator(this.ipv4Calc); 
+    
     this.setupEvents();
   }
   
@@ -76,6 +77,8 @@ class UIManager {
         const maskData = this.ipv4Validator.isValidMask(maskValue, classe);
         if (!maskData.sucess) throw new Error("Mascara nao reconhecida ou errada!");
 
+        //const resultados = this.ipv4Calc.calculateAll(ipValue, maskData);
+        //this.showResults(resultados);
       } catch(e) {
         this.showError(e.message);
       }
@@ -134,7 +137,8 @@ class UIManager {
 }
 
 class IPv4Validator {
-  constructor() {
+  constructor(ipv4Calc) {
+    this.ipv4Calc = ipv4Calc;
     this.classTemplates = {
       'A': '255.',
       'B': '255.255.',
@@ -176,7 +180,10 @@ class IPv4Validator {
       throw new Error("O CIDR deve estar entre 0 e 32.");
     }
 
-    return { type: 'CIDR', value: cidrNum, sucess: true};
+    const maskInt = cidrNum === 0 ? 0 : (-1 << (32 - cidrNum)) >>> 0; 
+    const maskStr = this.ipv4Calc.int32ToIp(maskInt); 
+
+    return { type: 'CIDR', maskStr, maskInt, success: true };
   }
 
   /**
@@ -194,34 +201,45 @@ class IPv4Validator {
     if (!mask.startsWith(prefixoObrigatorio)) {
       throw new Error(`A Classe ${classe} exige máscara iniciando com ${prefixoObrigatorio}x`);
     }
-
-    const octetos = mask.split('.').map(Number);
-    const valoresValidosMascara = [255, 254, 252, 248, 240, 224, 192, 128, 0];
-    let fimDosBits = false;
-
-    for (let oct of octetos) {
-      if (!valoresValidosMascara.includes(oct)) {
-        throw new Error(`Máscara inválida! O octeto ${oct} não existe em máscaras de rede.`);
-      }
-
-      if (fimDosBits && oct !== 0) {
-        throw new Error("Máscara inválida! Ela precisa ser contínua (ex: 255.255.240.0).");
-      }
-
-      if (oct < 255) fimDosBits = true;
-    }
-
-    if (octetos[3] > 254) throw new Error("O último octeto da máscara não pode ser maior que 254.");
     
-    return { type: 'DECIMAL', value: mask, sucess: true};
+    const maskInt = this.ipv4Calc.ipToInt32(mask);
+    const invertido = (~maskInt) >>> 0;
+
+    if ((invertido & (invertido + 1)) !== 0) {
+      throw new Error("Máscara inválida! Ela precisa ser contínua (ex: 255.255.240.0).");
+    }
+    
+    if (mask.endsWith('.255')) throw new Error("O último octeto da máscara não pode ser maior que 254.");
+    
+    return { type: 'DECIMAL', maskStr: mask, maskInt, success: true };
   }
 }
 
 class IPv4Calculator {
+  ipToInt32(ip) {
+    const ipBits = ip.split('.').reduce((int, oct) => (int << 8) + parseInt(oct, 10), 0); // 1.5
+    return ipBits >>> 0; // 1.6
+  }
 
+  calculateAll(ipStr, maskData) {
+    console.log(maskData)
+    const ipInt = this.ipToInt32(ipStr);
+    const maskInt = this.getMaskInt(maskData);
+  }
+
+  int32ToIp(int32) {
+    return [
+      (int32 >>> 24) & 255,
+      (int32 >>> 16) & 255,
+      (int32 >>> 8) & 255,
+      int32 & 255
+    ].join('.');
+  }
 }
 
 const managerUi = new UIManager();
+
+
 
 /*
   1.1 - O every só retorna true se todos os itens passarem pelo teste.
@@ -229,5 +247,13 @@ const managerUi = new UIManager();
   1.3 - o parseInt remove os zeros a esquerda <-, apos isso eu comparo o valor convertido
         convertendo denovo mais como por exemplo a entrada foi 025 apos a conversao fica 25,
         convertendo 25 da "25" e nao "025".
-  1.4 O reduce aceita um segundo parâmetro opcional que define o valor inicial do acumulador
-*/
+  1.4 - O reduce aceita um segundo parâmetro opcional que define o valor inicial do acumulador
+  1.5 - Converte um IP (ex: "10.0.0.5") em um inteiro de 32 bits.
+        Como funciona:
+          - Em binário, cada octeto ocupa 8 bits (1 Byte).
+          - O `<< 8` desloca os bits 8 casas para a esquerda (o mesmo que multiplicar por 256),
+            abrindo espaço para somar o próximo octeto na ponta.
+          - O `>>> 0` garante que o resultado seja tratado como um número positivo (sem sinal).
+        Motivos:gastar 70% menos memória e deixar a checagem de IP na velocidade da luz no seu sistema.
+  1.6 - Garante que seja um valor positivo.                
+*/  
