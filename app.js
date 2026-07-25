@@ -72,13 +72,13 @@ class UIManager {
           throw new Error("Endereço IP inválido!");
         }
 
-        this.showLoading('validando mascara');
-
         const maskData = this.ipv4Validator.isValidMask(maskValue, classe);
-        if (!maskData.sucess) throw new Error("Mascara nao reconhecida ou errada!");
+        if (!maskData.success) throw new Error("Mascara nao reconhecida ou errada!");
 
-        //const resultados = this.ipv4Calc.calculateAll(ipValue, maskData);
-        //this.showResults(resultados);
+        const resultados = this.ipv4Calc.calculateAll(ipValue, maskData.maskInt, maskData.maskStr);
+        this.showResults(resultados);
+
+        this.showSuccess('Concluido');
       } catch(e) {
         this.showError(e.message);
       }
@@ -91,7 +91,7 @@ class UIManager {
   }
 
   showSuccess(mensagem) {
-    this.ui.statusMsg.className = "p-3 rounded-xl mt-3 mb-3 text-[13px] font-semibold block border border-[#32d74b] bg-[#163a16] text-[#32d74b]";
+    this.ui.statusMsg.className = "p-3 rounded-xl mt-3 mb-3 text-[13px] font-semibold text-center block border border-[#32d74b] bg-[#163a16] text-[#32d74b]";
     this.ui.statusMsg.innerText = mensagem;
   }
 
@@ -195,22 +195,24 @@ class IPv4Validator {
    * @returns {{type: string, value: string, sucess: boolean}} Objeto padronizado informando o tipo, o valor validado e o status de sucesso.
    */
   validateDecimal(mask, classe) {
+    console.log(mask, classe)
     if (!this.isValidIPv4(mask)) throw new Error("Formato de máscara inválido.");
-
+    
     const prefixoObrigatorio = this.classTemplates[classe];
     if (!mask.startsWith(prefixoObrigatorio)) {
       throw new Error(`A Classe ${classe} exige máscara iniciando com ${prefixoObrigatorio}x`);
     }
     
+    console.log(prefixoObrigatorio)
     const maskInt = this.ipv4Calc.ipToInt32(mask);
     const invertido = (~maskInt) >>> 0;
-
+    
     if ((invertido & (invertido + 1)) !== 0) {
       throw new Error("Máscara inválida! Ela precisa ser contínua (ex: 255.255.240.0).");
     }
     
     if (mask.endsWith('.255')) throw new Error("O último octeto da máscara não pode ser maior que 254.");
-    
+
     return { type: 'DECIMAL', maskStr: mask, maskInt, success: true };
   }
 }
@@ -221,12 +223,6 @@ class IPv4Calculator {
     return ipBits >>> 0; // 1.6
   }
 
-  calculateAll(ipStr, maskData) {
-    console.log(maskData)
-    const ipInt = this.ipToInt32(ipStr);
-    const maskInt = this.getMaskInt(maskData);
-  }
-
   int32ToIp(int32) {
     return [
       (int32 >>> 24) & 255,
@@ -235,11 +231,48 @@ class IPv4Calculator {
       int32 & 255
     ].join('.');
   }
+
+  getNetworkInt(ipInt, maskInt) {
+    return (ipInt & maskInt) >>> 0;
+  }
+
+  getBroadcastInt(networkInt, maskInt) {
+    return (networkInt | ~maskInt) >>> 0;
+  }
+
+  getSalto(maskStr) {
+    const octets = maskStr.split('.').map(Number);
+    const octetoMisto = octets.find(oct => oct < 255) ?? 255;
+    return octetoMisto === 255 ? 1 : 256 - octetoMisto;
+  }
+
+  calculateAll(ipStr, maskInt, maskStr) {
+    const ipInt = this.ipToInt32(ipStr);
+    
+    const networkInt = this.getNetworkInt(ipInt, maskInt);
+    const broadcastInt = this.getBroadcastInt(networkInt, maskInt);
+
+    let firstHost = networkInt + 1;
+    let lastHost = broadcastInt - 1;
+
+    if (maskInt === 4294967295) {
+      firstHost = ipInt; 
+      lastHost = ipInt; 
+    }
+
+    return {
+      ip: ipStr,
+      mask: maskStr,
+      network: this.int32ToIp(networkInt),
+      broadcast: this.int32ToIp(broadcastInt),
+      firstHost: this.int32ToIp(firstHost),
+      lastHost: this.int32ToIp(lastHost),
+      blockSize: this.getSalto(maskStr)
+    };
+  }
 }
 
 const managerUi = new UIManager();
-
-
 
 /*
   1.1 - O every só retorna true se todos os itens passarem pelo teste.

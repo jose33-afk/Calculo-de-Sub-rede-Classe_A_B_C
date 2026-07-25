@@ -61,13 +61,27 @@
     <button id="btnCalcular" class="w-full bg-[#3b82f6] text-white border-none p-4 rounded-[24px] text-base font-semibold cursor-pointer hover:bg-blue-600 transition-colors">Calcular</button>
 
     <!-- Resultados -->
-    <div id="resultsArea" class="mt-6 pt-5 border-t border-[#333] hidden">
-      <div class="flex justify-between mb-3 text-sm"><span class="text-[#8e8e93]">IP:</span> <span id="resIp">-</span></div>
-      <div class="flex justify-between mb-3 text-sm"><span class="text-[#8e8e93]">Máscara:</span> <span id="resMask">-</span></div>
-      <div class="flex justify-between mb-3 text-sm"><span class="text-[#8e8e93]">Rede:</span> <span id="resNet">-</span></div>
-      <div class="flex justify-between mb-3 text-sm"><span class="text-[#8e8e93]">Broadcast:</span> <span id="resBroad">-</span></div>
+    <div id="resultsArea" class="mt-6 pt-5 border-t border-[#333] hidden flex-col gap-2">
+      <!-- IP e Máscara (Mais discretos) -->
+      <div class="flex justify-between items-center text-sm p-2 rounded-lg hover:bg-[#252528] transition-colors">
+        <span class="text-[#8e8e93]">Endereço IP:</span> 
+        <span id="resIp" class="text-[#f2f2f2] font-medium">-</span>
+      </div>
+      <div class="flex justify-between items-center text-sm p-2 rounded-lg hover:bg-[#252528] transition-colors">
+        <span class="text-[#8e8e93]">Máscara de Sub-rede:</span> 
+        <span id="resMask" class="text-[#f2f2f2] font-medium">-</span>
+      </div>
+      
+      <!-- Rede e Broadcast (Destacados em blocos com fundo sutil) -->
+      <div class="flex justify-between items-center text-sm p-2.5 mt-1 rounded-lg bg-[#252528] border border-[#333]">
+        <span class="text-[#8e8e93]">Endereço de Rede:</span> 
+        <span id="resNet" class="text-white font-bold tracking-wide">-</span>
+      </div>
+      <div class="flex justify-between items-center text-sm p-2.5 mt-3 rounded-lg bg-[#252528] border border-[#333]">
+        <span class="text-[#8e8e93]">Endereço Broadcast:</span> 
+        <span id="resBroad" class="text-white font-bold tracking-wide">-</span>
+      </div>
     </div>
-  </div>
 
   <script src="app.js"></script>
 </body>
