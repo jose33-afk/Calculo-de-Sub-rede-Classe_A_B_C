@@ -127,14 +127,34 @@ class IPv4Calculator {
   static isValidMask(mask, classe) {
     if (!mask) throw new Error("Informe a máscara ou CIDR.");
 
-    const cleanCidr = mask.replace('/', '');
-    if (/^\d+$/.test(cleanCidr)) {
-      const cidrNum = parseInt(cleanCidr, 10);
-      
-      if (cidrNum < 0 || cidrNum > 32) throw new Error("O CIDR deve estar entre 0 e 32.");
-      return { type: 'CIDR', value: cidrNum, sucess: true};
-    }
+    const cleanInput = mask.replace('/', '');
     
+    if (/^\d+$/.test(cleanInput)) {
+      return this.validateCidr(cleanInput);
+    } else {
+      return this.validateDecimal(mask, classe);
+    }
+  }
+
+  static validateCidr(cidr) {
+    const cidrNum = parseInt(cidr, 10);
+
+    if (cidrNum < 0 || cidrNum > 32) {
+      throw new Error("O CIDR deve estar entre 0 e 32.");
+    }
+
+    return { type: 'CIDR', value: cidrNum, sucess: true};
+  }
+
+  /**
+   * Valida e interpreta uma máscara de sub-rede em formato decimal (ex: 255.255.255.0).
+   * 
+   * @param {string} mask - A string contendo a máscara de rede digitada pelo usuário.
+   * @param {string} classe - A classe de rede ativa no momento ('A', 'B' ou 'C').
+   * @throws {Error} Lança um erro detalhado se o formato, a regra de classe ou a continuidade dos bits falharem.
+   * @returns {{type: string, value: string, sucess: boolean}} Objeto padronizado informando o tipo, o valor validado e o status de sucesso.
+   */
+  static validateDecimal(mask, classe) {
     if (!this.isValidIPv4(mask)) throw new Error("Formato de máscara inválido.");
 
     const prefixoObrigatorio = this.classTemplates[classe];
@@ -165,7 +185,6 @@ class IPv4Calculator {
 }
 
 const managerUi = new UIManager();
-
 
 /*
   1.1 - O every só retorna true se todos os itens passarem pelo teste.
