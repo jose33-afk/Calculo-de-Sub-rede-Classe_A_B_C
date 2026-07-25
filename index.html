@@ -42,8 +42,17 @@
       </div>
     </div>
 
-    <div id="resultsPopup" class="bg-[#1c1c1e] border border-[#3b82f6] p-4 rounded-xl mb-4 hidden shadow-lg">
-      <span class="text-[#f2f2f2] text-sm">Aqui entrarão os resultados depois...</span>
+    <div id="resultsPopup" class="bg-black border border-[#3b82f6] p-4 rounded-xl mb-4 hidden shadow-lg">
+      <div class="flex flex-col gap-2">
+        <div class="flex justify-between text-[13px] font-semibold">
+          <span class="text-[#8e8e93]">Tamanho do Bloco (Salto):</span> 
+          <span id="resBlock" class="text-[#3b82f6]">-</span>
+        </div>
+        <div class="flex justify-between text-[13px] font-semibold">
+          <span class="text-[#8e8e93]">Faixa de IPs Úteis:</span> 
+          <span id="resRange" class="text-[#3b82f6]">-</span>
+        </div>
+      </div>
     </div>
 
     <!-- Caixa de Aviso / Erro / Sucesso -->

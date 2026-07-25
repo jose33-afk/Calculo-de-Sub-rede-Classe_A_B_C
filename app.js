@@ -3,11 +3,12 @@ class UIManager {
     this.ui = UIManager.getElements([
       '#ipInput', '#statusMsg', '#btnCalcular', '#resultsArea',
       '#resIp', '#resMask', '#resNet', '#resBroad', '#resultsPopup', '#maskInput',
-      '#resultsPopup'
+      '#resBlock', '#resRange'
     ]);
 
     this.classBtns = document.querySelectorAll('.class-btn');
-    this.ip4Cacl = new IPv4Calculator(); 
+    this.ipv4Validator = new IPv4Validator(); 
+    this.ipv4Calc = new IPv4Calculator(); 
 
     this.setupEvents();
   }
@@ -56,7 +57,8 @@ class UIManager {
 
     const activeBtn = Array.from(this.classBtns).find(btn => btn.classList.contains('active'));
     const classe = activeBtn ? activeBtn.getAttribute('data-class') : 'C';
-
+   
+    this.clearResults();
     this.showLoading();
 
     setTimeout(() => {
@@ -65,15 +67,14 @@ class UIManager {
           throw new Error("Preencha o IP e a Máscara/CIDR.");    
         }
 
-        if (!this.ip4Cacl.isValidIPv4(ipValue)) {
+        if (!this.ipv4Validator.isValidIPv4(ipValue)) {
           throw new Error("Endereço IP inválido!");
         }
 
         this.showLoading('validando mascara');
 
-        const maskData = this.ip4Cacl.isValidMask(maskValue, classe);
+        const maskData = this.ipv4Validator.isValidMask(maskValue, classe);
         if (!maskData.sucess) throw new Error("Mascara nao reconhecida ou errada!");
-
 
       } catch(e) {
         this.showError(e.message);
@@ -99,12 +100,40 @@ class UIManager {
     this.ui.ipInput.focus();
   }
 
+  showResults(res) {
+    this.hideStatus(); 
+    
+    this.ui.resIp.innerText = res.ip;
+    this.ui.resMask.innerText = res.mask;
+    this.ui.resNet.innerText = res.network;
+    this.ui.resBroad.innerText = res.broadcast;
+    this.ui.resultsArea.classList.remove('hidden');
+
+    this.ui.resBlock.innerText = res.blockSize;
+    this.ui.resRange.innerText = `${res.firstHost} até ${res.lastHost}`;
+    this.ui.resultsPopup.classList.remove('hidden');
+    this.ui.resultsPopup.classList.add('block');
+  }
+
+  clearResults() {
+    this.ui.resultsArea.classList.add('hidden');
+    this.ui.resultsPopup.classList.add('hidden');
+    this.ui.resultsPopup.classList.remove('block');
+    
+    this.ui.resIp.innerText = '-';
+    this.ui.resMask.innerText = '-';
+    this.ui.resNet.innerText = '-';
+    this.ui.resBroad.innerText = '-';
+    this.ui.resBlock.innerText = '-';
+    this.ui.resRange.innerText = '-';
+  }
+
   hideStatus() {
     this.ui.statusMsg.className = "hidden";
   }
 }
 
-class IPv4Calculator {
+class IPv4Validator {
   constructor() {
     this.classTemplates = {
       'A': '255.',
@@ -186,6 +215,10 @@ class IPv4Calculator {
     
     return { type: 'DECIMAL', value: mask, sucess: true};
   }
+}
+
+class IPv4Calculator {
+
 }
 
 const managerUi = new UIManager();
