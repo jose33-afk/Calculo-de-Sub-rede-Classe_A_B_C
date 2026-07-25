@@ -7,6 +7,8 @@ class UIManager {
     ]);
 
     this.classBtns = document.querySelectorAll('.class-btn');
+    this.ip4Cacl = new IPv4Calculator(); 
+
     this.setupEvents();
   }
   
@@ -63,13 +65,13 @@ class UIManager {
           throw new Error("Preencha o IP e a Máscara/CIDR.");    
         }
 
-        if (!IPv4Calculator.isValidIPv4(ipValue)) {
+        if (!this.ip4Cacl.isValidIPv4(ipValue)) {
           throw new Error("Endereço IP inválido!");
         }
 
         this.showLoading('validando mascara');
 
-        const maskData = IPv4Calculator.isValidMask(maskValue, classe);
+        const maskData = this.ip4Cacl.isValidMask(maskValue, classe);
         if (!maskData.sucess) throw new Error("Mascara nao reconhecida ou errada!");
 
 
@@ -103,13 +105,15 @@ class UIManager {
 }
 
 class IPv4Calculator {
-  static classTemplates = {
-    'A': '255.',
-    'B': '255.255.',
-    'C': '255.255.255.'
+  constructor() {
+    this.classTemplates = {
+      'A': '255.',
+      'B': '255.255.',
+      'C': '255.255.255.'
+    } 
   }
 
-  static isValidIPv4(ip) {
+  isValidIPv4(ip) {
     if (!ip || typeof ip !== 'string') return false;
 
     const octetos = ip.split('.');
@@ -124,7 +128,7 @@ class IPv4Calculator {
     });
   }
 
-  static isValidMask(mask, classe) {
+  isValidMask(mask, classe) {
     if (!mask) throw new Error("Informe a máscara ou CIDR.");
 
     const cleanInput = mask.replace('/', '');
@@ -136,7 +140,7 @@ class IPv4Calculator {
     }
   }
 
-  static validateCidr(cidr) {
+  validateCidr(cidr) {
     const cidrNum = parseInt(cidr, 10);
 
     if (cidrNum < 0 || cidrNum > 32) {
@@ -154,7 +158,7 @@ class IPv4Calculator {
    * @throws {Error} Lança um erro detalhado se o formato, a regra de classe ou a continuidade dos bits falharem.
    * @returns {{type: string, value: string, sucess: boolean}} Objeto padronizado informando o tipo, o valor validado e o status de sucesso.
    */
-  static validateDecimal(mask, classe) {
+  validateDecimal(mask, classe) {
     if (!this.isValidIPv4(mask)) throw new Error("Formato de máscara inválido.");
 
     const prefixoObrigatorio = this.classTemplates[classe];
