@@ -72,7 +72,7 @@ class UIManager {
         const maskData = IPv4Calculator.isValidMask(maskValue, classe);
         if (!maskData.sucess) throw new Error("Mascara nao reconhecida ou errada!");
 
-        
+
       } catch(e) {
         this.showError(e.message);
       }
@@ -143,6 +143,21 @@ class IPv4Calculator {
     }
 
     const octetos = mask.split('.').map(Number);
+    const valoresValidosMascara = [255, 254, 252, 248, 240, 224, 192, 128, 0];
+    let fimDosBits = false;
+
+    for (let oct of octetos) {
+      if (!valoresValidosMascara.includes(oct)) {
+        throw new Error(`Máscara inválida! O octeto ${oct} não existe em máscaras de rede.`);
+      }
+
+      if (fimDosBits && oct !== 0) {
+        throw new Error("Máscara inválida! Ela precisa ser contínua (ex: 255.255.240.0).");
+      }
+
+      if (oct < 255) fimDosBits = true;
+    }
+
     if (octetos[3] > 254) throw new Error("O último octeto da máscara não pode ser maior que 254.");
     
     return { type: 'DECIMAL', value: mask, sucess: true};
