@@ -30,16 +30,24 @@
     </div>
 
     <!-- Inputs -->
-    <div class="flex flex-col mb-5">
-      <label for="ipInput" class="text-[13px] text-[#8e8e93] mb-2">Endereço (IP/CIDR ou IP Máscara)</label>
-      <input type="text" id="ipInput" class="bg-black border border-[#333] text-[#f2f2f2] p-4 rounded-xl text-base outline-none focus:border-[#3b82f6] transition-colors" placeholder="Ex: 192.168.10.85/26 ou 255.2.0.3">
-      
-      <div id="resultsPopup" class="bg-[#1c1c1e] border border-[#3b82f6] p-4 rounded-xl mt-3 hidden shadow-lg">
-        <span class="text-[#f2f2f2] text-sm">Aqui entrarão os resultados depois...</span>
+    <div class="flex flex-col gap-4 mb-5">
+      <div>
+        <label for="ipInput" class="text-[13px] text-[#8e8e93] mb-2 block">Endereço IP</label>
+        <input type="text" id="ipInput" class="w-full bg-black border border-[#333] text-[#f2f2f2] p-4 rounded-xl text-base outline-none focus:border-[#3b82f6] transition-colors" placeholder="Ex: 192.168.10.85">
       </div>
 
-      <div id="statusMsg" class="hidden p-3 rounded-xl mt-3 text-[13px] font-semibold text-center border"></div>
+      <div>
+        <label for="maskInput" class="text-[13px] text-[#8e8e93] mb-2 block">Máscara ou CIDR</label>
+        <input type="text" id="maskInput" class="w-full bg-black border border-[#333] text-[#f2f2f2] p-4 rounded-xl text-base outline-none focus:border-[#3b82f6] transition-colors" placeholder="Ex: 255.255.255.0 ou 24">
+      </div>
     </div>
+
+    <div id="resultsPopup" class="bg-[#1c1c1e] border border-[#3b82f6] p-4 rounded-xl mb-4 hidden shadow-lg">
+      <span class="text-[#f2f2f2] text-sm">Aqui entrarão os resultados depois...</span>
+    </div>
+
+    <!-- Caixa de Aviso / Erro / Sucesso -->
+    <div id="statusMsg" class="hidden p-3 rounded-xl mb-4 text-[13px] font-semibold text-center border"></div>
 
     <button id="btnCalcular" class="w-full bg-[#3b82f6] text-white border-none p-4 rounded-[24px] text-base font-semibold cursor-pointer hover:bg-blue-600 transition-colors">Calcular</button>
 

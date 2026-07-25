@@ -2,7 +2,8 @@ class UIManager {
   constructor() {
     this.ui = UIManager.getElements([
       '#ipInput', '#statusMsg', '#btnCalcular', '#resultsArea',
-      '#resIp', '#resMask', '#resNet', '#resBroad', '#resultsPopup'
+      '#resIp', '#resMask', '#resNet', '#resBroad', '#resultsPopup', '#maskInput',
+      '#resultsPopup'
     ]);
 
     this.classBtns = document.querySelectorAll('.class-btn');
@@ -20,7 +21,7 @@ class UIManager {
 
       listElements[keyName] = document.querySelector(nameItem);
       return listElements;
-    }, {}); // 1.2 
+    }, {}); // 1.4 
   }
 
   setupEvents() {
@@ -48,45 +49,51 @@ class UIManager {
    * @returns {void}
    */
   handleCalculateClick() {
-    const inputValue = this.ui.ipInput.value.trim();
-    
+    const ipValue = this.ui.ipInput.value.trim();
+    const maskValue = this.ui.maskInput.value.trim();
+
+    const activeBtn = Array.from(this.classBtns).find(btn => btn.classList.contains('active'));
+    const classe = activeBtn ? activeBtn.getAttribute('data-class') : 'C';
+
     this.showLoading();
 
     setTimeout(() => {
       try {
-        if (inputValue === "") {
-          throw new Error("Por favor, digite um IP ou Máscara.");
+        if (!ipValue || !maskValue) {
+          throw new Error("Preencha o IP e a Máscara/CIDR.");    
         }
 
-        const ipPart = inputValue.split(/[\s/]+/)[0]; //eu pego o resto para validar o /24
+        if (!IPv4Calculator.isValidIPv4(ipValue)) {
+          throw new Error("Endereço IP inválido!");
+        }
+
+        this.showLoading('validando mascara');
+
+        const maskData = IPv4Calculator.isValidMask(maskValue, classe);
+        if (!maskData.sucess) throw new Error("Mascara nao reconhecida ou errada!");
+
         
-        if (!IPv4Calculator.isValidIPv4(ipPart)) {
-          throw new Error("IP inválido! Digite um formato correto (ex: 192.168.0.1).");
-        }
-
-        this.showSuccess("IP validado com sucesso!");
-
-        setTimeout(() => this.hideStatus(), 1000);
       } catch(e) {
         this.showError(e.message);
       }
     }, 600);
   }
 
-  showLoading() {
-    this.ui.statusMsg.className = "p-3 rounded-xl mt-3 text-[13px] font-semibold flex justify-center items-center gap-2 border border-[#333] bg-black text-[#8e8e93]";
-    this.ui.statusMsg.innerHTML = '<div class="w11-spinner"></div> Calculando...';
+  showLoading(msg = 'Carregando...') {
+    this.ui.statusMsg.className = "p-3 rounded-xl mt-3 mb-3 text-[13px] font-semibold flex justify-center items-center gap-2 border border-[#333] bg-black text-[#8e8e93]";
+    this.ui.statusMsg.innerHTML = `<div class="w11-spinner"></div> ${msg}`;
   }
 
   showSuccess(mensagem) {
-    this.ui.statusMsg.className = "p-3 rounded-xl mt-3 text-[13px] font-semibold block border border-[#32d74b] bg-[#163a16] text-[#32d74b]";
+    this.ui.statusMsg.className = "p-3 rounded-xl mt-3 mb-3 text-[13px] font-semibold block border border-[#32d74b] bg-[#163a16] text-[#32d74b]";
     this.ui.statusMsg.innerText = mensagem;
   }
 
   showError(mensagem) {
-    this.ui.statusMsg.className = "p-3 rounded-xl mt-3 text-[13px] font-semibold block border border-[#ff453a] bg-[#3a1616] text-[#ff453a]";
+    this.ui.statusMsg.className = "p-3 rounded-xl mt-3 mb-3 text-[13px] font-semibold block border border-[#ff453a] bg-[#3a1616] text-[#ff453a]";
     this.ui.statusMsg.innerText = mensagem;
     this.ui.ipInput.value = '';
+    this.ui.maskInput.value = '';
     this.ui.ipInput.focus();
   }
 
@@ -96,6 +103,12 @@ class UIManager {
 }
 
 class IPv4Calculator {
+  static classTemplates = {
+    'A': '255.',
+    'B': '255.255.',
+    'C': '255.255.255.'
+  }
+
   static isValidIPv4(ip) {
     if (!ip || typeof ip !== 'string') return false;
 
@@ -103,12 +116,36 @@ class IPv4Calculator {
 
     if (octetos.length !== 4) return false;
 
-    return octetos.every(octeto => { 
-      if (!/^\d+$/.test(octeto)) return false; 
-      const num = parseInt(octeto, 10); 
+    return octetos.every(octeto => { // 1.1
+      if (!/^\d+$/.test(octeto)) return false; // 1.2
+      const num = parseInt(octeto, 10); // 1.3 
       
       return num >= 0 && num <= 255 && String(num) === octeto;
     });
+  }
+
+  static isValidMask(mask, classe) {
+    if (!mask) throw new Error("Informe a máscara ou CIDR.");
+
+    const cleanCidr = mask.replace('/', '');
+    if (/^\d+$/.test(cleanCidr)) {
+      const cidrNum = parseInt(cleanCidr, 10);
+      
+      if (cidrNum < 0 || cidrNum > 32) throw new Error("O CIDR deve estar entre 0 e 32.");
+      return { type: 'CIDR', value: cidrNum, sucess: true};
+    }
+    
+    if (!this.isValidIPv4(mask)) throw new Error("Formato de máscara inválido.");
+
+    const prefixoObrigatorio = this.classTemplates[classe];
+    if (!mask.startsWith(prefixoObrigatorio)) {
+      throw new Error(`A Classe ${classe} exige máscara iniciando com ${prefixoObrigatorio}x`);
+    }
+
+    const octetos = mask.split('.').map(Number);
+    if (octetos[3] > 254) throw new Error("O último octeto da máscara não pode ser maior que 254.");
+    
+    return { type: 'DECIMAL', value: mask, sucess: true};
   }
 }
 
@@ -116,6 +153,10 @@ const managerUi = new UIManager();
 
 
 /*
-  1.1 O reduce aceita um segundo parâmetro opcional que define o valor inicial do acumulador
-
-  */
+  1.1 - O every só retorna true se todos os itens passarem pelo teste.
+  1.2 - Garante que contenha apenas dígitos numéricos.
+  1.3 - o parseInt remove os zeros a esquerda <-, apos isso eu comparo o valor convertido
+        convertendo denovo mais como por exemplo a entrada foi 025 apos a conversao fica 25,
+        convertendo 25 da "25" e nao "025".
+  1.4 O reduce aceita um segundo parâmetro opcional que define o valor inicial do acumulador
+*/
