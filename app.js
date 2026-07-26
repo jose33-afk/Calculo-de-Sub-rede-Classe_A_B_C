@@ -78,6 +78,11 @@ class UIManager {
           throw new Error("Endereço IP inválido!");
         }
 
+        const firstOcteto = parseInt(ipValue.split('.')[0], 10);
+        if (firstOcteto >= 224) {
+          throw new Error("Operação negada: Endereços Multicast (Classe D) e Experimentais (Classe E) não são suportados.");
+        }
+
         const maskData = this.ipv4Validator.isValidMask(maskValue, classe);
         if (!maskData.success) throw new Error("Mascara nao reconhecida ou errada!");
 
@@ -173,17 +178,22 @@ class IPv4Validator {
     const cleanInput = mask.replace('/', '');
     
     if (/^\d+$/.test(cleanInput)) {
-      return this.validateCidr(cleanInput);
+      return this.validateCidr(cleanInput, classe);
     } else {
       return this.validateDecimal(mask, classe);
     }
   }
 
-  validateCidr(cidr) {
+  validateCidr(cidr, classe) {
     const cidrNum = parseInt(cidr, 10);
 
     if (cidrNum < 0 || cidrNum > 32) {
-      throw new Error("O CIDR deve estar entre 0 e 32.");
+      throw new Error("Prefixo CIDR fora do escopo. Utilize um valor entre /0 e /32.");
+    }
+
+    const minCidr = { 'A': 8, 'B': 16, 'C': 24 };
+    if (cidrNum < minCidr[classe]) {
+      throw new Error(`Conflito de topologia: A Classe ${classe} exige um prefixo mínimo de /${minCidr[classe]}.`);
     }
 
     const maskInt = cidrNum === 0 ? 0 : (-1 << (32 - cidrNum)) >>> 0; 
@@ -201,23 +211,21 @@ class IPv4Validator {
    * @returns {{type: string, value: string, sucess: boolean}} Objeto padronizado informando o tipo, o valor validado e o status de sucesso.
    */
   validateDecimal(mask, classe) {
-    console.log(mask, classe)
     if (!this.isValidIPv4(mask)) throw new Error("Formato de máscara inválido.");
     
     const prefixoObrigatorio = this.classTemplates[classe];
     if (!mask.startsWith(prefixoObrigatorio)) {
-      throw new Error(`A Classe ${classe} exige máscara iniciando com ${prefixoObrigatorio}x`);
+      throw new Error(`Máscara incompatível: A Classe ${classe} base exige no mínimo o prefixo ${prefixoObrigatorio}0.`);
     }
     
-    console.log(prefixoObrigatorio)
     const maskInt = this.ipv4Calc.ipToInt32(mask);
     const invertido = (~maskInt) >>> 0;
     
     if ((invertido & (invertido + 1)) !== 0) {
-      throw new Error("Máscara inválida! Ela precisa ser contínua (ex: 255.255.240.0).");
+      throw new Error("Máscara descontínua: Os bits da máscara de sub-rede devem ser contíguos.");
     }
     
-    if (mask.endsWith('.255')) throw new Error("O último octeto da máscara não pode ser maior que 254.");
+    if (mask.endsWith('.255')) throw new Error("Máscara inválida: O último octeto não pode exceder 254 em sub-redes utilizáveis.");
 
     return { type: 'DECIMAL', maskStr: mask, maskInt, success: true };
   }
