@@ -6,7 +6,7 @@
   <br><br>
 </div>
 
-Calculadora de sub-redes IPv4 focada em performance e precisão **[Acessar](https://seu-usuario.github.io/seu-repositorio)**.
+Calculadora de sub-redes IPv4 focada em performance e precisão **[Acessar](https://jose33-afk.github.io/NetCalc-IPv4)**.
 
 ---
 
