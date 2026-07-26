@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Calculadora Bitwise</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="icon" href="./favicon.png" type="image/x-icon">
   <style>
     .w11-spinner {
       width: 16px; height: 16px;
@@ -16,7 +17,7 @@
     @keyframes spin { to { transform: rotate(360deg); } }
   </style>
 </head>
-<body class="bg-[#0f0f0f] text-[#f2f2f2] font-sans flex justify-center items-center h-screen m-0">
+<body class="bg-[#0f0f0f] text-[#f2f2f2] font-sans flex justify-center items-center min-h-screen m-0 relative py-10">
 
   <div class="bg-[#1c1c1e] w-full max-w-[400px] p-6 rounded-[24px] shadow-2xl">
     <h2 class="mt-0 mb-6 text-[22px] font-bold">Rede</h2>
@@ -82,6 +83,10 @@
         <span id="resBroad" class="text-white font-bold tracking-wide">-</span>
       </div>
     </div>
+
+    <footer class="absolute bottom-4 text-center text-[#8e8e93] text-[12px] w-full left-0">
+      &copy; 2026 NetCalc-IPv4. Todos os direitos reservados.
+    </footer>
 
   <script src="app.js"></script>
 </body>

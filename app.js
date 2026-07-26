@@ -34,6 +34,12 @@ class UIManager {
     });
 
     this.ui.btnCalcular.addEventListener('click', () => this.handleCalculateClick());
+    
+    document.addEventListener('keydown', (evento) => {
+      if (evento.key === 'Enter') {
+        this.handleCalculateClick();
+      }
+    });
   }
 
   handleClassToggle(clickedBtn) {
